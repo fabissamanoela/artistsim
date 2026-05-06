@@ -163,7 +163,8 @@ event.choices.forEach(choice => {
     choicesContainer.appendChild(btn);
 });
 document.getElementById('event-modal').classList.add('active');
-    // --- STUDIO & ALBUM CREATION ---
+};
+// --- STUDIO & ALBUM CREATION ---
 
 function goToPhase2() {
 const title = document.getElementById('album-title').value;
