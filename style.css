@@ -62,3 +62,47 @@ input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px 
 .modal-content h3 { color: #ff3366; margin-top: 0; margin-bottom: 15px; }
 .modal-content p { color: #333; margin-bottom: 20px; line-height: 1.4; }
 .choice-btn { background-color: #333; margin-top: 10px; padding: 12px; font-size: 1rem; }
+/* Studio & Tracklist Styling */
+.track-row {
+display: flex;
+align-items: center;
+gap: 5px;
+margin-bottom: 10px;
+background: #f8f9fa;
+padding: 10px;
+border-radius: 8px;
+border: 1px solid #ddd;
+}
+.track-row input[type="text"] {
+margin: 0;
+flex-grow: 1;
+padding: 8px;
+}
+.track-row select {
+padding: 8px;
+border-radius: 5px;
+border: 1px solid #ddd;
+background: white;
+}
+.track-row button {
+margin: 0;
+padding: 8px 12px;
+background: #dc3545; /* Red delete button */
+width: auto;
+}
+.promo-options {
+text-align: left;
+background: #f8f9fa;
+padding: 15px;
+border-radius: 8px;
+margin-top: 10px;
+}
+.promo-options label {
+display: block;
+margin-bottom: 10px;
+font-size: 1.1rem;
+}
+.promo-check {
+transform: scale(1.5);
+margin-right: 10px;
+}
