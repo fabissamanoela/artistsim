@@ -8,13 +8,14 @@
 <body>
     <div id="game-container">
         
-        <!-- START SCREEN -->
-        <div id="start-screen" class="screen active">
-            <h1>PopStar Sim</h1>
-            <p>Your rise to the top of the charts begins here.</p>
-            <button onclick="showScreen('creation-screen')">New Game</button>
-        </div>
-
+       <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1>PopStar Sim</h1>
+        <p>Your rise to the top of the charts begins here.</p>
+        <button onclick="showScreen('creation-screen')">New Game</button>
+        <!-- NEW: Continue Game Button -->
+        <button id="continue-btn" onclick="loadGame()" style="display:none; background-color:#28a745; margin-top:15px;">Continue Saved Game</button>
+    </div>
        <!-- CHARACTER CREATION -->
     <div id="creation-screen" class="screen">
         <h2>Create Your Artist</h2>
