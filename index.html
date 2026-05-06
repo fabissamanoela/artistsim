@@ -15,25 +15,31 @@
             <button onclick="showScreen('creation-screen')">New Game</button>
         </div>
 
-        <!-- CHARACTER CREATION -->
-        <div id="creation-screen" class="screen">
-            <h2>Create Your Artist</h2>
-            <div class="input-group">
-                <label>Artist Name:</label>
-                <input type="text" id="artist-name" placeholder="e.g. The Weekday">
-            </div>
-            <div class="input-group">
-                <label>Origin Story:</label>
-                <div class="origin-options">
-                    <button class="origin-btn" onclick="selectOrigin('childActor')">Child Actor</button>
-                    <button class="origin-btn" onclick="selectOrigin('bedroomProducer')">Bedroom Producer</button>
-                    <button class="origin-btn" onclick="selectOrigin('realityTV')">Reality TV</button>
-                    <button class="origin-btn" onclick="selectOrigin('indieGrinder')">Indie Grinder</button>
-                </div>
-            </div>
-            <p id="origin-description" class="hint-text"></p>
-            <button id="to-label-btn" onclick="goToLabelSelection()" disabled="">Next: Sign Deal</button>
+       <!-- CHARACTER CREATION -->
+    <div id="creation-screen" class="screen">
+        <h2>Create Your Artist</h2>
+        <div class="input-group">
+            <label>Artist Name:</label>
+            <input type="text" id="artist-name" placeholder="e.g. The Weekday">
         </div>
+        <!-- NEW: Age Input -->
+        <div class="input-group">
+            <label>Starting Age (Min 14):</label>
+            <input type="number" id="artist-age" min="14" value="18" style="width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; margin-top: 5px;">
+        </div>
+        
+        <div class="input-group">
+            <label>Origin Story:</label>
+            <div class="origin-options">
+                <button class="origin-btn" onclick="selectOrigin('childActor')">Child Actor</button>
+                <button class="origin-btn" onclick="selectOrigin('bedroomProducer')">Bedroom Producer</button>
+                <button class="origin-btn" onclick="selectOrigin('realityTV')">Reality TV</button>
+                <button class="origin-btn" onclick="selectOrigin('indieGrinder')">Indie Grinder</button>
+            </div>
+        </div>
+        <p id="origin-description" class="hint-text"></p>
+        <button id="to-label-btn" onclick="goToLabelSelection()" disabled>Next: Sign Deal</button>
+    </div>
 
         <!-- RECORD LABEL SELECTION -->
         <div id="label-screen" class="screen">
