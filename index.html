@@ -8,39 +8,37 @@
 <body>
     <div id="game-container">
         
-       <!-- START SCREEN -->
-    <div id="start-screen" class="screen active">
-        <h1>PopStar Sim</h1>
-        <p>Your rise to the top of the charts begins here.</p>
-        <button onclick="showScreen('creation-screen')">New Game</button>
-        <!-- NEW: Continue Game Button -->
-        <button id="continue-btn" onclick="loadGame()" style="display:none; background-color:#28a745; margin-top:15px;">Continue Saved Game</button>
-    </div>
-       <!-- CHARACTER CREATION -->
-    <div id="creation-screen" class="screen">
-        <h2>Create Your Artist</h2>
-        <div class="input-group">
-            <label>Artist Name:</label>
-            <input type="text" id="artist-name" placeholder="e.g. The Weekday">
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <h1>PopStar Sim</h1>
+            <p>Your rise to the top of the charts begins here.</p>
+            <button onclick="showScreen('creation-screen')">New Game</button>
+            <button id="continue-btn" onclick="loadGame()" style="display:none; background-color:#28a745; margin-top:15px;">Continue Saved Game</button>
         </div>
-        <!-- NEW: Age Input -->
-        <div class="input-group">
-            <label>Starting Age (Min 14):</label>
-            <input type="number" id="artist-age" min="14" value="18" style="width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; margin-top: 5px;">
-        </div>
-        
-        <div class="input-group">
-            <label>Origin Story:</label>
-            <div class="origin-options">
-                <button class="origin-btn" onclick="selectOrigin('childActor')">Child Actor</button>
-                <button class="origin-btn" onclick="selectOrigin('bedroomProducer')">Bedroom Producer</button>
-                <button class="origin-btn" onclick="selectOrigin('realityTV')">Reality TV</button>
-                <button class="origin-btn" onclick="selectOrigin('indieGrinder')">Indie Grinder</button>
+
+        <!-- CHARACTER CREATION -->
+        <div id="creation-screen" class="screen">
+            <h2>Create Your Artist</h2>
+            <div class="input-group">
+                <label>Artist Name:</label>
+                <input type="text" id="artist-name" placeholder="e.g. The Weekday">
             </div>
+            <div class="input-group">
+                <label>Starting Age (Min 14):</label>
+                <input type="number" id="artist-age" min="14" value="18" style="width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; margin-top: 5px;">
+            </div>
+            <div class="input-group">
+                <label>Origin Story:</label>
+                <div class="origin-options">
+                    <button class="origin-btn" onclick="selectOrigin('childActor')">Child Actor</button>
+                    <button class="origin-btn" onclick="selectOrigin('bedroomProducer')">Bedroom Producer</button>
+                    <button class="origin-btn" onclick="selectOrigin('realityTV')">Reality TV</button>
+                    <button class="origin-btn" onclick="selectOrigin('indieGrinder')">Indie Grinder</button>
+                </div>
+            </div>
+            <p id="origin-description" class="hint-text"></p>
+            <button id="to-label-btn" onclick="goToLabelSelection()" disabled="">Next: Sign Deal</button>
         </div>
-        <p id="origin-description" class="hint-text"></p>
-        <button id="to-label-btn" onclick="goToLabelSelection()" disabled>Next: Sign Deal</button>
-    </div>
 
         <!-- RECORD LABEL SELECTION -->
         <div id="label-screen" class="screen">
@@ -60,61 +58,52 @@
                 <div class="bank">Bank: $<span id="ui-money">0</span></div>
             </header>
 
-           <!-- TAB 1: Dashboard -->
-        <div id="tab-dashboard" class="tab-content active-tab">
-            <div class="stats-container">
-                <h3>Artist Stats & Standing</h3>
-                <p style="font-size:0.9rem; color:#666;">Label Relationship: <span id="ui-relationship" style="font-weight:bold;">50</span>/100</p>
-                <div id="stats-grid" class="grid" style="margin-top:10px;"></div>
+            <!-- TAB 1: Dashboard -->
+            <div id="tab-dashboard" class="tab-content active-tab">
+                <div class="stats-container">
+                    <h3>Artist Stats &amp; Standing</h3>
+                    <p style="font-size:0.9rem; color:#666;">Label Relationship: <span id="ui-relationship" style="font-weight:bold;">50</span>/100</p>
+                    <div id="stats-grid" class="grid" style="margin-top:10px;"></div>
+                </div>
+                <button class="action-btn next-turn-btn" onclick="nextWeek(false)">Next Week (Pass Time)</button>
+                <button class="action-btn" style="background-color: #17a2b8;" onclick="openDiscography()">View Discography</button>
+                <button class="action-btn" style="background-color: #ffc107; color: #000; margin-top: 30px;" onclick="saveGame()">💾 Save Game</button>
             </div>
-            <button class="action-btn next-turn-btn" onclick="nextWeek()">Next Week (Pass Time)</button>
-            <button class="action-btn" style="background-color: #17a2b8;" onclick="openDiscography()">View Discography</button>
-            <!-- NEW: Save Game Button -->
-            <button class="action-btn" style="background-color: #ffc107; color: #000; margin-top: 30px;" onclick="saveGame()">💾 Save Game</button>
-        </div>
 
             <!-- TAB 2: Studio -->
             <div id="tab-studio" class="tab-content">
                 <h3>Recording Studio</h3>
-                
-               <!-- Phase 1: Details -->
-            <div id="studio-phase-1">
-                <div class="input-group">
-                    <label>Project Type:</label>
-                    <!-- Added onchange event -->
-                    <select id="project-type" style="width: 100%; padding: 10px; border-radius: 8px;" onchange="toggleProjectType()">
-                        <option value="album">Full Album</option>
-                        <option value="single">Standalone Single</option>
-                    </select>
+                <div id="studio-phase-1">
+                    <div class="input-group">
+                        <label>Project Type:</label>
+                        <select id="project-type" style="width: 100%; padding: 10px; border-radius: 8px;" onchange="toggleProjectType()">
+                            <option value="album">Full Album</option>
+                            <option value="single">Standalone Single</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Title:</label>
+                        <input type="text" id="album-title" placeholder="Name your project">
+                    </div>
+                    <div class="input-group" id="single-vibe-group" style="display:none;">
+                        <label>Single Vibe:</label>
+                        <select id="single-vibe" style="width: 100%; padding: 10px; border-radius: 8px;">
+                            <option value="upbeat">Upbeat</option>
+                            <option value="ballad">Ballad</option>
+                            <option value="experimental">Experimental</option>
+                        </select>
+                    </div>
+                    <button class="action-btn" onclick="goToPhase2()">Next Step</button>
                 </div>
-                <div class="input-group">
-                    <label>Title:</label>
-                    <input type="text" id="album-title" placeholder="Name your project">
-                </div>
-                <!-- NEW: Vibe Selector (Only shows for singles) -->
-                <div class="input-group" id="single-vibe-group" style="display:none;">
-                    <label>Single Vibe:</label>
-                    <select id="single-vibe" style="width: 100%; padding: 10px; border-radius: 8px;">
-                        <option value="upbeat">Upbeat</option>
-                        <option value="ballad">Ballad</option>
-                        <option value="experimental">Experimental</option>
-                    </select>
-                </div>
-                <button class="action-btn" onclick="goToPhase2()">Next: Tracklist</button>
-            </div>
 
-            <!-- Phase 2: Tracklist -->
-            <div id="studio-phase-2" style="display:none;">
-                <h4>Tracklist Builder</h4>
-                <div id="tracklist-container"></div>
-                <button class="action-btn" style="background-color: #28a745;" onclick="addTrack()">+ Add New Song</button>
-                <!-- NEW: Add Existing Single Button -->
-                <button class="action-btn" style="background-color: #17a2b8;" onclick="addExistingSingle()">+ Add Existing Single</button>
-                
-                <button class="action-btn next-turn-btn" onclick="submitToLabel()">Submit to Execs</button>
-            </div>
+                <div id="studio-phase-2" style="display:none;">
+                    <h4>Tracklist Builder</h4>
+                    <div id="tracklist-container"></div>
+                    <button class="action-btn" style="background-color: #28a745;" onclick="addTrack()">+ Add New Song</button>
+                    <button class="action-btn" style="background-color: #17a2b8;" onclick="addExistingSingle()">+ Add Existing Single</button>
+                    <button class="action-btn next-turn-btn" onclick="submitToLabel()">Submit to Execs</button>
+                </div>
 
-                <!-- Phase 3: Exec Review & Promo Allocation -->
                 <div id="studio-phase-3" style="display:none;">
                     <h4>Label Review</h4>
                     <p id="exec-feedback" style="font-weight:bold; margin-bottom: 10px;"></p>
@@ -126,7 +115,6 @@
                             <button class="action-btn" onclick="buyPromo('Social', 2000, 4)">Social Campaign ($2k)</button>
                         </div>
                         <p style="margin-top:10px;">Hype Built: <span id="ui-hype-built">0</span> points</p>
-                        
                         <div class="input-group" style="margin-top:20px;">
                             <label>Schedule Release Date:</label>
                             <select id="release-delay" style="width: 100%; padding: 10px; border-radius: 8px;">
@@ -147,49 +135,40 @@
                 <button class="action-btn" onclick="trainSkill('vocals', 500)">Vocal Coaching ($500)</button>
                 <button class="action-btn" onclick="trainSkill('songwriting', 300)">Song Workshop ($300)</button>
                 <button class="action-btn" onclick="trainSkill('production', 400)">Production Class ($400)</button>
+                <button class="action-btn" onclick="trainSkill('stagePresence', 500)">Dance &amp; Choreo ($500)</button>
             </div>
 
-           <!-- TAB 4: Tour -->
-        <div id="tab-tour" class="tab-content">
-            <h3>Touring & Gigs</h3>
-            
-            <!-- Phase 1: Choose Tour Size -->
-            <div id="tour-phase-1">
-                <p class="hint-text">You need at least 10 released songs to go on a real tour.</p>
-                <button class="action-btn" onclick="playLocalGig()">Play Local Dive Bar (Takes 1 Wk)</button>
-                <button class="action-btn" style="background-color: #ff3366; margin-top: 20px;" onclick="setupTour('national')">National Tour (Takes 4 Wks)</button>
-                <button class="action-btn" style="background-color: #6f42c1;" onclick="setupTour('world')">World Tour (Takes 10 Wks)</button>
+            <!-- TAB 4: Tour -->
+            <div id="tab-tour" class="tab-content">
+                <h3>Touring &amp; Gigs</h3>
+                <div id="tour-phase-1">
+                    <p class="hint-text">You need at least 10 released songs to go on a real tour.</p>
+                    <button class="action-btn" onclick="playLocalGig()">Play Local Dive Bar (Takes 1 Wk)</button>
+                    <button class="action-btn" style="background-color: #ff3366; margin-top: 20px;" onclick="setupTour('national')">National Tour (Takes 4 Wks)</button>
+                    <button class="action-btn" style="background-color: #6f42c1;" onclick="setupTour('world')">World Tour (Takes 10 Wks)</button>
+                </div>
+                <div id="tour-phase-2" style="display:none;">
+                    <h4>Tour Setup</h4>
+                    <div class="input-group"><label>Tour Name:</label><input type="text" id="tour-name" placeholder="e.g. The After Hours Tour"></div>
+                    <div class="input-group"><label>Promote an Album?</label><select id="tour-promo-album" style="width: 100%; padding: 10px; border-radius: 8px;"></select></div>
+                    <button class="action-btn" style="background-color: #28a745;" onclick="goToSetlistBuilder()">Next: Build Setlist</button>
+                    <button class="action-btn" style="background-color: #dc3545;" onclick="cancelTour()">Cancel</button>
+                </div>
+                <div id="tour-phase-3" style="display:none;">
+                    <h4>Setlist Builder</h4>
+                    <p class="hint-text">Select 10 to 20 songs for your setlist.</p>
+                    <h3 id="setlist-counter" style="color: #ff3366; text-align: center; margin-bottom: 10px;">0 / 20</h3>
+                    <div id="setlist-container"></div>
+                    <button id="start-tour-btn" class="action-btn next-turn-btn" onclick="startTour()" disabled="">Hit the Road!</button>
+                    <button class="action-btn" style="background-color: #666;" onclick="cancelTour()">Cancel</button>
+                </div>
             </div>
 
-            <!-- Phase 2: Tour Details -->
-            <div id="tour-phase-2" style="display:none;">
-                <h4>Tour Setup</h4>
-                <div class="input-group">
-                    <label>Tour Name:</label>
-                    <input type="text" id="tour-name" placeholder="e.g. The After Hours Tour">
-                </div>
-                <div class="input-group">
-                    <label>Promote an Album?</label>
-                    <select id="tour-promo-album" style="width: 100%; padding: 10px; border-radius: 8px;">
-                        <!-- Options injected by JS -->
-                    </select>
-                </div>
-                <button class="action-btn" style="background-color: #28a745;" onclick="goToSetlistBuilder()">Next: Build Setlist</button>
-                <button class="action-btn" style="background-color: #dc3545;" onclick="cancelTour()">Cancel</button>
-            </div>
-
-            <!-- Phase 3: Setlist Builder -->
-            <div id="tour-phase-3" style="display:none;">
-                <h4>Setlist Builder</h4>
-                <p class="hint-text">Select 10 to 20 songs for your setlist.</p>
-                <h3 id="setlist-counter" style="color: #ff3366; text-align: center; margin-bottom: 10px;">0 / 20</h3>
-                
-                <div id="setlist-container">
-                    <!-- Checkboxes injected by JS -->
-                </div>
-                
-                <button id="start-tour-btn" class="action-btn next-turn-btn" onclick="startTour()" disabled>Hit the Road!</button>
-                <button class="action-btn" style="background-color: #666;" onclick="cancelTour()">Cancel</button>
+            <div class="bottom-nav">
+                <button class="nav-btn selected-nav" onclick="switchTab('tab-dashboard', this)">Home</button>
+                <button class="nav-btn" onclick="switchTab('tab-studio', this)">Studio</button>
+                <button class="nav-btn" onclick="switchTab('tab-training', this)">Train</button>
+                <button class="nav-btn" onclick="switchTab('tab-tour', this)">Tour</button>
             </div>
         </div>
 
