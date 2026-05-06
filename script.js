@@ -17,7 +17,6 @@ if (savedData) {
     updateMainUI();
     showScreen('game-ui');
 }
-}
 // --- GAME STATE & DATA ---
 let player = {
 name: "", origin: "", money: 0, age: 18, week: 1, totalWeeks: 1,
@@ -188,7 +187,6 @@ alert(`Scheduled! "${currentProject.title}" will drop soon.`);
 resetStudio(); 
 switchTab('tab-dashboard', document.querySelectorAll('.nav-btn')[0]);
 }
-function resetStudio() { document.getElementById('album-title').value = ""; document.getElementById('tracklist-container').innerHTML = ""; document.getElementById('studio-phase-3').style.display = 'none'; document.getElementById('studio-phase-1').style.display = 'block'; updateMainUI(); }
 
 // --- TOUR ENGINE (NEW) ---
 
