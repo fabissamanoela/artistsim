@@ -1,28 +1,7 @@
-### 2. The Complete `script.js`
-Copy this entire block and replace everything in `script.js`. (I fixed the variables so Albums, Singles, and Tours all play perfectly together).
+### 2. `script.js`
+Copy this and replace everything in your `script.js` file:
 
 ```javascript
-// --- SAVE & LOAD SYSTEM ---
-window.onload = () => {
-if (localStorage.getItem('popstar_save')) {
-    document.getElementById('continue-btn').style.display = 'block';
-}
-};
-
-function saveGame() {
-localStorage.setItem('popstar_save', JSON.stringify(player));
-alert("💾 Game Saved! You can safely close the app.");
-}
-
-function loadGame() {
-let savedData = localStorage.getItem('popstar_save');
-if (savedData) {
-    player = JSON.parse(savedData);
-    updateMainUI();
-    showScreen('game-ui');
-}
-}
-
 // --- GAME STATE & DATA ---
 let player = {
 name: "", origin: "", money: 0, age: 18, week: 1, totalWeeks: 1,
