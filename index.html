@@ -38,6 +38,7 @@
 
         <!-- IN-GAME UI (Contains Header, Tabs, and Nav) -->
        <!-- IN-GAME UI -->
+   <!-- IN-GAME UI -->
     <div id="game-ui" class="screen in-game-screen">
         <header>
             <div>
@@ -54,9 +55,11 @@
                 <div id="stats-grid" class="grid"></div>
             </div>
             <button class="action-btn next-turn-btn" onclick="nextWeek()">Next Week (Rest)</button>
+            <!-- NEW: View Discography Button -->
+            <button class="action-btn" style="background-color: #17a2b8;" onclick="openDiscography()">View Discography</button>
         </div>
 
-        <!-- TAB 2: Studio (NEW!) -->
+        <!-- TAB 2: Studio -->
         <div id="tab-studio" class="tab-content">
             <h3>Recording Studio</h3>
             
@@ -64,23 +67,28 @@
             <div id="studio-phase-1">
                 <p class="hint-text">Let's start your new project.</p>
                 <div class="input-group">
-                    <label>Album Title:</label>
-                    <input type="text" id="album-title" placeholder="Name your masterpiece">
+                    <label>Project Type:</label>
+                    <select id="project-type" style="width: 100%; padding: 10px; border-radius: 8px;">
+                        <option value="album">Full Album</option>
+                        <option value="single">Standalone Single</option>
+                    </select>
                 </div>
                 <div class="input-group">
-                    <label>Album Concept (Optional):</label>
+                    <label>Title:</label>
+                    <input type="text" id="album-title" placeholder="Name your project">
+                </div>
+                <div class="input-group">
+                    <label>Concept (Albums Only):</label>
                     <input type="text" id="album-concept" placeholder="e.g. A breakup record in space">
                 </div>
-                <button class="action-btn" onclick="goToPhase2()">Next: Tracklist</button>
+                <button class="action-btn" onclick="goToPhase2()">Next Step</button>
             </div>
 
-            <!-- Phase 2: Tracklist -->
+            <!-- Phase 2: Tracklist (Hidden for Singles) -->
             <div id="studio-phase-2" style="display:none;">
                 <h4>Tracklist Builder</h4>
                 <p class="hint-text">Add your songs and define their vibes. Interludes cannot be singles!</p>
-                <div id="tracklist-container">
-                    <!-- Tracks will be injected here -->
-                </div>
+                <div id="tracklist-container"></div>
                 <button class="action-btn" style="background-color: #28a745;" onclick="addTrack()">+ Add Song</button>
                 <button class="action-btn next-turn-btn" onclick="goToPhase3()">Next: Marketing</button>
             </div>
@@ -96,14 +104,14 @@
                     <label><input type="checkbox" class="promo-check" value="Podcast"> Podcasts</label><br>
                     <label><input type="checkbox" class="promo-check" value="Social"> Social Media Campaigns</label>
                 </div>
-                <button class="action-btn next-turn-btn" onclick="releaseAlbum()">Drop Album!</button>
+                <!-- CHANGED function to releaseMusic -->
+                <button class="action-btn next-turn-btn" onclick="releaseMusic()">Drop Music!</button>
             </div>
         </div>
 
         <!-- TAB 3: Training -->
         <div id="tab-training" class="tab-content">
             <h3>Train Skills</h3>
-            <p class="hint-text">Training takes 1 week and costs money. Live Vocals only improve via touring!</p>
             <button class="action-btn" onclick="trainSkill('vocals', 500)">Vocal Coaching ($500)</button>
             <button class="action-btn" onclick="trainSkill('songwriting', 300)">Songwriting Workshop ($300)</button>
             <button class="action-btn" onclick="trainSkill('production', 400)">Production Masterclass ($400)</button>
@@ -115,12 +123,11 @@
         <!-- TAB 4: Tour -->
         <div id="tab-tour" class="tab-content">
             <h3>Touring & Gigs</h3>
-            <p class="hint-text">Setlists coming in Step 4!</p>
+            <p class="hint-text">Setlists coming in Step 5!</p>
             <button class="action-btn" onclick="playLocalGig()">Play Local Dive Bar</button>
             <button class="action-btn disabled">National Tour (Locked)</button>
         </div>
 
-        <!-- Bottom Navigation Bar (Now with 4 buttons) -->
         <div class="bottom-nav">
             <button class="nav-btn selected-nav" onclick="switchTab('tab-dashboard', this)">Home</button>
             <button class="nav-btn" onclick="switchTab('tab-studio', this)">Studio</button>
@@ -129,14 +136,24 @@
         </div>
     </div>
 
-    <!-- RANDOM EVENT POP-UP -->
+    <!-- EVENT MODAL -->
     <div id="event-modal" class="modal">
         <div class="modal-content">
             <h3 id="event-title">Event Title</h3>
-            <p id="event-desc">Event description goes here...</p>
+            <p id="event-desc">Event description</p>
             <div id="event-choices"></div>
         </div>
     </div>
+
+    <!-- DISCOGRAPHY MODAL (NEW!) -->
+    <div id="disco-modal" class="modal">
+        <div class="modal-content" style="max-height: 85vh; overflow-y: auto;">
+            <h3>Your Discography</h3>
+            <div id="disco-list" style="margin-top: 15px;"></div>
+            <button class="action-btn next-turn-btn" onclick="document.getElementById('disco-modal').classList.remove('active')">Close</button>
+        </div>
+    </div>
+
 </div>
 <script src="script.js"></script>
 </body>
