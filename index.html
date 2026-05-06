@@ -133,18 +133,47 @@
                 <button class="action-btn" onclick="trainSkill('production', 400)">Production Class ($400)</button>
             </div>
 
-            <!-- TAB 4: Tour -->
-            <div id="tab-tour" class="tab-content">
-                <h3>Touring &amp; Gigs</h3>
-                <button class="action-btn" onclick="playLocalGig()">Play Local Dive Bar</button>
-                <button class="action-btn disabled">Tours coming next!</button>
+           <!-- TAB 4: Tour -->
+        <div id="tab-tour" class="tab-content">
+            <h3>Touring & Gigs</h3>
+            
+            <!-- Phase 1: Choose Tour Size -->
+            <div id="tour-phase-1">
+                <p class="hint-text">You need at least 10 released songs to go on a real tour.</p>
+                <button class="action-btn" onclick="playLocalGig()">Play Local Dive Bar (Takes 1 Wk)</button>
+                <button class="action-btn" style="background-color: #ff3366; margin-top: 20px;" onclick="setupTour('national')">National Tour (Takes 4 Wks)</button>
+                <button class="action-btn" style="background-color: #6f42c1;" onclick="setupTour('world')">World Tour (Takes 10 Wks)</button>
             </div>
 
-            <div class="bottom-nav">
-                <button class="nav-btn selected-nav" onclick="switchTab('tab-dashboard', this)">Home</button>
-                <button class="nav-btn" onclick="switchTab('tab-studio', this)">Studio</button>
-                <button class="nav-btn" onclick="switchTab('tab-training', this)">Train</button>
-                <button class="nav-btn" onclick="switchTab('tab-tour', this)">Tour</button>
+            <!-- Phase 2: Tour Details -->
+            <div id="tour-phase-2" style="display:none;">
+                <h4>Tour Setup</h4>
+                <div class="input-group">
+                    <label>Tour Name:</label>
+                    <input type="text" id="tour-name" placeholder="e.g. The After Hours Tour">
+                </div>
+                <div class="input-group">
+                    <label>Promote an Album?</label>
+                    <select id="tour-promo-album" style="width: 100%; padding: 10px; border-radius: 8px;">
+                        <!-- Options injected by JS -->
+                    </select>
+                </div>
+                <button class="action-btn" style="background-color: #28a745;" onclick="goToSetlistBuilder()">Next: Build Setlist</button>
+                <button class="action-btn" style="background-color: #dc3545;" onclick="cancelTour()">Cancel</button>
+            </div>
+
+            <!-- Phase 3: Setlist Builder -->
+            <div id="tour-phase-3" style="display:none;">
+                <h4>Setlist Builder</h4>
+                <p class="hint-text">Select 10 to 20 songs for your setlist.</p>
+                <h3 id="setlist-counter" style="color: #ff3366; text-align: center; margin-bottom: 10px;">0 / 20</h3>
+                
+                <div id="setlist-container">
+                    <!-- Checkboxes injected by JS -->
+                </div>
+                
+                <button id="start-tour-btn" class="action-btn next-turn-btn" onclick="startTour()" disabled>Hit the Road!</button>
+                <button class="action-btn" style="background-color: #666;" onclick="cancelTour()">Cancel</button>
             </div>
         </div>
 
