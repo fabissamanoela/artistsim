@@ -1,3 +1,23 @@
+// --- SAVE & LOAD SYSTEM ---
+window.onload = () => {
+if (localStorage.getItem('popstar_save')) {
+    document.getElementById('continue-btn').style.display = 'block';
+}
+};
+
+function saveGame() {
+localStorage.setItem('popstar_save', JSON.stringify(player));
+alert("💾 Game Saved Successfully! You can safely close the app.");
+}
+
+function loadGame() {
+let savedData = localStorage.getItem('popstar_save');
+if (savedData) {
+    player = JSON.parse(savedData);
+    updateMainUI();
+    showScreen('game-ui');
+}
+}
 // --- GAME STATE & DATA ---
 let player = {
 name: "", origin: "", money: 0, age: 18, week: 1, totalWeeks: 1,
@@ -58,25 +78,83 @@ for (const [k, v] of Object.entries(player.stats)) grid.innerHTML += `<div class
 }
 
 // --- STUDIO UI ---
+// --- STUDIO UI ---
+
+// Shows/Hides the vibe selector based on project type
+function toggleProjectType() {
+const type = document.getElementById('project-type').value;
+document.getElementById('single-vibe-group').style.display = (type === 'single') ? 'block' : 'none';
+}
+
 function goToPhase2() {
-const title = document.getElementById('album-title').value; const type = document.getElementById('project-type').value;
+const title = document.getElementById('album-title').value; 
+const type = document.getElementById('project-type').value;
 if (!title) return alert("Title required!");
+
 currentProject = { title, type, tracks: [], hype: 0, budget: 0 };
 document.getElementById('studio-phase-1').style.display = 'none';
-if (type === 'single') submitToLabel(); else { document.getElementById('studio-phase-2').style.display = 'block'; if(document.getElementById('tracklist-container').children.length === 0) addTrack(); }
+
+if (type === 'single') {
+    // Automatically create a 1-song tracklist for singles with the chosen vibe!
+    const vibe = document.getElementById('single-vibe').value;
+    currentProject.tracks.push({ name: title, vibe: vibe, isSingle: true });
+    submitToLabel(); 
+} else {
+    document.getElementById('studio-phase-2').style.display = 'block';
+    if(document.getElementById('tracklist-container').children.length === 0) addTrack();
+}
 }
 
 function addTrack() {
 const div = document.createElement('div'); div.className = 'track-row';
-div.innerHTML = `<input type="text" class="track-name" placeholder="Song Name"><select class="track-vibe"><option value="upbeat">Upbeat</option><option value="ballad">Ballad</option><option value="interlude">Interlude</option></select><button onclick="this.parentElement.remove()">X</button>`;
+div.innerHTML = `<input type="text" class="track-name" placeholder="Song Name" style="flex-grow:1; padding:8px;"><select class="track-vibe"><option value="upbeat">Upbeat</option><option value="ballad">Ballad</option><option value="interlude">Interlude</option><option value="experimental">Experimental</option></select><button onclick="this.parentElement.remove()">X</button>`;
 document.getElementById('tracklist-container').appendChild(div);
+}
+
+function addExistingSingle() {
+// Find standalone singles that haven't been put on an album yet
+let availableSingles = player.discography.filter(d => d.type === 'single' && !d.includedInAlbum);
+if (availableSingles.length === 0) return alert("You have no available standalone singles to add!");
+
+const div = document.createElement('div'); div.className = 'track-row';
+
+// Create dropdown options
+let options = availableSingles.map(s => {
+    let vibe = (s.tracks && s.tracks[0]) ? s.tracks[0].vibe : 'upbeat';
+    return `<option value="${s.title}" data-vibe="${vibe}">${s.title}</option>`;
+}).join('');
+
+// Inject a special row where the input is a select dropdown
+div.innerHTML = `
+    <select class="track-name" style="flex-grow:1; padding:8px; border-radius:5px; border:1px solid #ddd;" onchange="this.nextElementSibling.value = this.options[this.selectedIndex].dataset.vibe">
+        ${options}
+    </select>
+    <select class="track-vibe" disabled style="background:#eee; padding:8px; border-radius:5px; border:1px solid #ddd;">
+        <option value="upbeat">Upbeat</option>
+        <option value="ballad">Ballad</option>
+        <option value="experimental">Experimental</option>
+    </select>
+    <button onclick="this.parentElement.remove()">X</button>
+`;
+document.getElementById('tracklist-container').appendChild(div);
+
+// Trigger the change event instantly to set the initial vibe lock
+div.querySelector('.track-name').dispatchEvent(new Event('change'));
 }
 
 function submitToLabel() {
 if (currentProject.type === 'album') {
     const rows = document.querySelectorAll('.track-row'); if (rows.length === 0) return alert("Need tracks!");
-    rows.forEach(r => currentProject.tracks.push({ name: r.querySelector('.track-name').value || "Track", vibe: r.querySelector('.track-vibe').value, isSingle: false }));
+    rows.forEach(r => {
+        let inputEl = r.querySelector('.track-name');
+        currentProject.tracks.push({ 
+            name: inputEl.value || "Track", 
+            vibe: r.querySelector('.track-vibe').value, 
+            isSingle: inputEl.tagName === 'SELECT' // If it's a dropdown, it's an existing single!
+        });
+    });
 }
+
 let rawQ = (player.stats.songwriting + player.stats.production + player.stats.vocals) / 3;
 let execScore = Math.floor(rawQ / 10); currentProject.quality = rawQ;
 document.getElementById('studio-phase-2').style.display = 'none'; document.getElementById('studio-phase-3').style.display = 'block';
@@ -94,15 +172,21 @@ if (execScore < player.label.minScore) {
 }
 }
 
-function buyPromo(t, cost, hype) {
-if (currentProject.budget < cost) return alert("Not enough budget!");
-currentProject.budget -= cost; currentProject.hype += hype;
-document.getElementById('ui-promo-budget').innerText = currentProject.budget.toLocaleString(); document.getElementById('ui-hype-built').innerText = currentProject.hype;
-}
-function scrapProject() { resetStudio(); }
 function scheduleRelease() {
 currentProject.releaseWeek = player.totalWeeks + parseInt(document.getElementById('release-delay').value);
-player.pendingReleases.push(currentProject); alert(`Scheduled!`); resetStudio(); switchTab('tab-dashboard', document.querySelectorAll('.nav-btn')[0]);
+
+// If this is an album, find any existing singles we attached and mark them as "included in an album"
+if (currentProject.type === 'album') {
+    currentProject.tracks.forEach(t => {
+        let existing = player.discography.find(d => d.type === 'single' && d.title === t.name);
+        if (existing) existing.includedInAlbum = true;
+    });
+}
+
+player.pendingReleases.push(currentProject); 
+alert(`Scheduled! "${currentProject.title}" will drop soon.`); 
+resetStudio(); 
+switchTab('tab-dashboard', document.querySelectorAll('.nav-btn')[0]);
 }
 function resetStudio() { document.getElementById('album-title').value = ""; document.getElementById('tracklist-container').innerHTML = ""; document.getElementById('studio-phase-3').style.display = 'none'; document.getElementById('studio-phase-1').style.display = 'block'; updateMainUI(); }
 
