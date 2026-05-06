@@ -168,14 +168,19 @@ document.getElementById('event-modal').classList.add('active');
 
 function goToPhase2() {
 const title = document.getElementById('album-title').value;
-if (title.trim() === "") return alert("Your album needs a title!");
+const type = document.getElementById('project-type').value;
+
+if (title.trim() === "") return alert("Your project needs a title!");
 
 document.getElementById('studio-phase-1').style.display = 'none';
-document.getElementById('studio-phase-2').style.display = 'block';
 
-// Add one empty track by default
-if(document.getElementById('tracklist-container').children.length === 0) {
-    addTrack();
+if (type === 'single') {
+    // Singles don't need tracklists, go straight to marketing
+    document.getElementById('studio-phase-3').style.display = 'block';
+} else {
+    // It's an album, go to tracklist builder
+    document.getElementById('studio-phase-2').style.display = 'block';
+    if(document.getElementById('tracklist-container').children.length === 0) addTrack();
 }
 }
 
@@ -202,56 +207,54 @@ container.appendChild(div);
 function goToPhase3() {
 const tracks = document.querySelectorAll('.track-row');
 if (tracks.length === 0) return alert("You need at least one track!");
-
 document.getElementById('studio-phase-2').style.display = 'none';
 document.getElementById('studio-phase-3').style.display = 'block';
 }
 
-function releaseAlbum() {
-// 1. Check Marketing Mix
+function releaseMusic() {
 const checks = document.querySelectorAll('.promo-check:checked');
 if (checks.length !== 3) return alert("The label demands you choose exactly 3 marketing focuses.");
 
-// 2. Gather Album Data
 const title = document.getElementById('album-title').value;
 const concept = document.getElementById('album-concept').value;
+const type = document.getElementById('project-type').value; // 'album' or 'single'
 
 let tracks = [];
-document.querySelectorAll('.track-row').forEach(row => {
-    tracks.push({
-        name: row.querySelector('.track-name').value || "Untitled Track",
-        vibe: row.querySelector('.track-vibe').value,
-        isSingle: false // Will be used in Step 4!
+if (type === 'album') {
+    document.querySelectorAll('.track-row').forEach(row => {
+        tracks.push({
+            name: row.querySelector('.track-name').value || "Untitled Track",
+            vibe: row.querySelector('.track-vibe').value,
+            isSingle: false 
+        });
     });
-});
+}
 
-// 3. Calculate Album Quality (Based on stats)
+// Chart Calculation
 let baseQuality = (player.stats.songwriting + player.stats.production + player.stats.vocals) / 3;
 let hypeBonus = (player.stats.charisma + player.stats.mediaTraining) / 10;
-
-// The "Magic" chart formula
 let finalScore = Math.floor(baseQuality + hypeBonus + (Math.random() * 15)); 
 
-// 4. Determine Chart Position based on score
 let chartPosition = 200;
-if (finalScore > 90) chartPosition = Math.floor(Math.random() * 5) + 1; // Top 5!
-else if (finalScore > 70) chartPosition = Math.floor(Math.random() * 40) + 10; // Top 50
-else if (finalScore > 50) chartPosition = Math.floor(Math.random() * 100) + 50; // Top 150
+let chartName = type === 'album' ? "Billboard 200" : "Hot 100";
+
+if (finalScore > 90) chartPosition = Math.floor(Math.random() * 5) + 1; 
+else if (finalScore > 75) chartPosition = Math.floor(Math.random() * 40) + 10; 
+else if (finalScore > 50) chartPosition = Math.floor(Math.random() * 100) + 50; 
 else chartPosition = "Did Not Chart";
 
-// 5. Save to Discography
+// Save to memory
 player.discography.push({
     title: title,
+    type: type, 
     concept: concept,
     tracklist: tracks,
-    peakChart: chartPosition,
-    score: finalScore
+    peakChart: chartPosition
 });
 
-// 6. Output Result
-alert(`🎉 ALBUM RELEASED: "${title}" 🎉\n\nConcept: ${concept || 'None'}\nTracks: ${tracks.length}\n\nBillboard 200 Debut: #${chartPosition}`);
+alert(`🎉 ${type.toUpperCase()} RELEASED: "${title}" 🎉\n\n${chartName} Debut: #${chartPosition}`);
 
-// Reset Studio UI for the next album
+// Reset Studio UI
 document.getElementById('album-title').value = "";
 document.getElementById('album-concept').value = "";
 document.getElementById('tracklist-container').innerHTML = "";
@@ -260,8 +263,78 @@ document.querySelectorAll('.promo-check').forEach(c => c.checked = false);
 document.getElementById('studio-phase-3').style.display = 'none';
 document.getElementById('studio-phase-1').style.display = 'block';
 
-// Pass time and return to dashboard
-player.money += (10000 - (chartPosition === "Did Not Chart" ? 8000 : chartPosition * 20)); // Make money based on charts
+player.money += (10000 - (chartPosition === "Did Not Chart" ? 8000 : chartPosition * 20)); 
 nextWeek();
 switchTab('tab-dashboard', document.querySelectorAll('.nav-btn')[0]);
+}
+
+// --- DISCOGRAPHY & SINGLES MANAGEMENT ---
+
+function openDiscography() {
+const list = document.getElementById('disco-list');
+list.innerHTML = "";
+
+if (player.discography.length === 0) {
+    list.innerHTML = "<p>No music released yet. Hit the studio!</p>";
+} else {
+    // Loop through all released music and build the UI
+    player.discography.forEach((release, index) => {
+        let html = `
+        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 8px; text-align: left; background: #f8f9fa;">
+            <h4 style="color:#ff3366; margin:0; font-size:1.2rem;">${release.title}</h4>
+            <p style="font-size:0.85rem; color:#666; margin-bottom:5px;">
+                Type: ${release.type.toUpperCase()} | Peak Chart: #${release.peakChart}
+            </p>`;
+        
+        // If it's an album, list the tracks and add the "Make Single" buttons
+        if (release.type === 'album') {
+            html += `<ul style="font-size: 0.9rem; padding-left: 20px; margin-top: 5px;">`;
+            release.tracklist.forEach((track, tIndex) => {
+                let singleBtn = "";
+                
+                // The Rule: Interludes can't be singles. Already-released singles can't be released again.
+                if (track.vibe !== 'interlude' && !track.isSingle) {
+                    singleBtn = `<button style="padding: 3px 8px; font-size: 0.7rem; margin-left: 10px; width: auto; background: #333;" onclick="releasePostAlbumSingle(${index}, ${tIndex})">Release as Single</button>`;
+                } else if (track.isSingle) {
+                    singleBtn = `<span style="font-size: 0.75rem; color: #ff3366; margin-left: 10px; font-weight:bold;">(Single)</span>`;
+                }
+                
+                html += `<li style="margin-bottom: 5px;">${track.name} [${track.vibe}] ${singleBtn}</li>`;
+            });
+            html += `</ul>`;
+        }
+        html += `</div>`;
+        list.innerHTML += html;
+    });
+}
+
+document.getElementById('disco-modal').classList.add('active');
+}
+
+function releasePostAlbumSingle(albumIndex, trackIndex) {
+let album = player.discography[albumIndex];
+let track = album.tracklist[trackIndex];
+
+// Mark it as a single in the album data so the button disappears
+track.isSingle = true;
+
+// Calculate new chart position for the Hot 100
+let finalScore = ((player.stats.songwriting + player.stats.vocals) / 2) + (Math.random() * 20); 
+let chartPosition = 100;
+if (finalScore > 85) chartPosition = Math.floor(Math.random() * 10) + 1; // Top 10
+else if (finalScore > 60) chartPosition = Math.floor(Math.random() * 40) + 11; // Top 50
+else chartPosition = "Did Not Chart";
+
+// Add it to the discography as its own release
+player.discography.push({
+    title: track.name,
+    type: 'single',
+    peakChart: chartPosition
+});
+
+alert(`Label approved! You pushed "${track.name}" to radio and streaming as a single!\n\nHot 100 Peak: #${chartPosition}`);
+
+// Refresh the UI and pass time
+openDiscography(); 
+nextWeek(); 
 }
