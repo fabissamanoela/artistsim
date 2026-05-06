@@ -1,26 +1,29 @@
-// --- GAME STATE ---
+// --- GAME STATE & DATA ---
 let player = {
-name: "", origin: "", money: 0, age: 18, week: 1,
+name: "", origin: "", money: 0, age: 18, week: 1, totalWeeks: 1,
 stats: { charisma: 0, mediaTraining: 0, songwriting: 0, production: 0, vocals: 0, liveVocals: 0, stagePresence: 0 },
-discography: [] // NEW: Stores all released music!
+label: null, labelRelationship: 50,
+discography: [], pendingReleases: [], activeReleases: []
 };
 
 let selectedOriginId = null;
+let selectedLabelId = null;
+let currentProject = {}; // Temporarily holds the album being made
 
-// --- ORIGINS AND EVENTS ---
 const origins = {
-childActor: { title: "Child Actor", desc: "Grew up on TV. Great camera skills, poor music skills.", money: 50000, age: 16, stats: { charisma: 75, mediaTraining: 80, songwriting: 15, production: 10, vocals: 40, liveVocals: 30, stagePresence: 65 } },
-bedroomProducer: { title: "Bedroom Producer", desc: "Musical genius, terrified of the spotlight.", money: 2000, age: 18, stats: { charisma: 20, mediaTraining: 10, songwriting: 60, production: 85, vocals: 30, liveVocals: 10, stagePresence: 15 } },
-realityTV: { title: "Reality TV Contestant", desc: "Huge voice, instant fame, terrible industry knowledge.", money: 5000, age: 20, stats: { charisma: 60, mediaTraining: 40, songwriting: 20, production: 5, vocals: 85, liveVocals: 70, stagePresence: 50 } },
-indieGrinder: { title: "Indie Gig Grinder", desc: "Been playing dive bars for years. You know how to put on a show.", money: 500, age: 24, stats: { charisma: 45, mediaTraining: 20, songwriting: 70, production: 30, vocals: 55, liveVocals: 55, stagePresence: 80 } }
+childActor: { title: "Child Actor", money: 50000, age: 16, stats: { charisma: 75, mediaTraining: 80, songwriting: 15, production: 10, vocals: 40, liveVocals: 30, stagePresence: 65 } },
+bedroomProducer: { title: "Bedroom Producer", money: 2000, age: 18, stats: { charisma: 20, mediaTraining: 10, songwriting: 60, production: 85, vocals: 30, liveVocals: 10, stagePresence: 15 } },
+realityTV: { title: "Reality TV", money: 5000, age: 20, stats: { charisma: 60, mediaTraining: 40, songwriting: 20, production: 5, vocals: 85, liveVocals: 70, stagePresence: 50 } },
+indieGrinder: { title: "Indie Grinder", money: 500, age: 24, stats: { charisma: 45, mediaTraining: 20, songwriting: 70, production: 30, vocals: 55, liveVocals: 55, stagePresence: 80 } }
 };
 
-const randomEvents = [
-{ title: "Paparazzi Ambush!", desc: "A reporter asks a rude question about your ex.", choices: [{ text: "Smile and answer", effect: () => { adjustStat('mediaTraining', 5); } }, { text: "Yell at them", effect: () => { adjustStat('mediaTraining', -10); adjustStat('charisma', 5); } }] },
-{ title: "TikTok Trend", desc: "An old demo goes viral.", choices: [{ text: "Do the dance", effect: () => { adjustStat('charisma', 8); player.money += 1500; } }, { text: "Ignore it", effect: () => { adjustStat('mediaTraining', -2); } }] }
-];
+const labels = {
+megaCorp: { name: "MegaCorp Records", desc: "Huge budgets, extreme control.", control: 8, promoMultiplier: 50000, minScore: 7 },
+trendsetters: { name: "Trendsetters", desc: "Moderate budget, balanced control.", control: 5, promoMultiplier: 25000, minScore: 5 },
+basementIndie: { name: "Basement Indie", desc: "Low budget, total creative freedom.", control: 2, promoMultiplier: 5000, minScore: 2 }
+};
 
-// --- CORE UI FUNCTIONS ---
+// --- SETUP & UI FLOW ---
 
 function showScreen(screenId) {
 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -28,32 +31,47 @@ document.getElementById(screenId).classList.add('active');
 }
 
 function switchTab(tabId, btnElement) {
-// Hide all tabs
-document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active-tab'));
-// Remove selected class from all nav buttons
-document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('selected-nav'));
-
-// Show new tab and highlight button
+document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('selected-nav'));
 document.getElementById(tabId).classList.add('active-tab');
 if (btnElement) btnElement.classList.add('selected-nav');
 }
 
-function selectOrigin(originId) {
-selectedOriginId = originId;
-document.querySelectorAll('.origin-btn').forEach(btn => btn.classList.remove('selected'));
+function selectOrigin(id) {
+selectedOriginId = id;
+document.querySelectorAll('.origin-btn').forEach(b => b.classList.remove('selected'));
 event.target.classList.add('selected');
-document.getElementById('origin-description').innerText = origins[originId].desc;
+document.getElementById('to-label-btn').disabled = false;
+}
+
+function goToLabelSelection() {
+if (!document.getElementById('artist-name').value) return alert("Enter a name!");
+const container = document.getElementById('label-options');
+container.innerHTML = "";
+for (const [key, label] of Object.entries(labels)) {
+    container.innerHTML += `
+        <div class="label-card" onclick="selectLabel('${key}', this)">
+            <h4>${label.name}</h4>
+            <p>${label.desc}</p>
+            <p><strong>Control:</strong> ${label.control}/10 | <strong>Minimum Quality:</strong> ${label.minScore}/10</p>
+        </div>`;
+}
+showScreen('label-screen');
+}
+
+function selectLabel(id, el) {
+selectedLabelId = id;
+document.querySelectorAll('.label-card').forEach(c => c.classList.remove('selected'));
+el.classList.add('selected');
 document.getElementById('start-career-btn').disabled = false;
 }
 
 function startCareer() {
-const nameInput = document.getElementById('artist-name').value;
-if (nameInput.trim() === "") return alert("Please enter a stage name!");
-
 const o = origins[selectedOriginId];
-player.name = nameInput; player.origin = o.title; player.money = o.money; player.age = o.age; player.week = 1;
+player.name = document.getElementById('artist-name').value;
+player.origin = o.title; player.money = o.money; player.age = o.age;
 player.stats = { ...o.stats };
-
+player.label = labels[selectedLabelId];
 updateMainUI();
 showScreen('game-ui');
 }
@@ -63,122 +81,29 @@ document.getElementById('ui-name').innerText = player.name;
 document.getElementById('ui-money').innerText = player.money.toLocaleString();
 document.getElementById('ui-age').innerText = player.age;
 document.getElementById('ui-week').innerText = player.week;
+document.getElementById('ui-label-name').innerText = player.label.name;
+document.getElementById('ui-relationship').innerText = player.labelRelationship;
 
 const statsGrid = document.getElementById('stats-grid');
 statsGrid.innerHTML = ""; 
-const statLabels = { charisma: "Charisma", mediaTraining: "Media", songwriting: "Songwriting", production: "Production", vocals: "Vocals", liveVocals: "Live Vocals", stagePresence: "Stage Presence" };
-
+const labelsDict = { charisma: "Charisma", mediaTraining: "Media", songwriting: "Songwriting", production: "Production", vocals: "Vocals", liveVocals: "Live Vocals", stagePresence: "Stage Presence" };
 for (const [key, value] of Object.entries(player.stats)) {
-    statsGrid.innerHTML += `<div class="stat-box"><div class="stat-name">${statLabels[key]}</div><div class="stat-value">${value}/100</div></div>`;
+    statsGrid.innerHTML += `<div class="stat-box"><div class="stat-name">${labelsDict[key]}</div><div class="stat-value">${value}/100</div></div>`;
 }
 }
 
-// --- STAT LOGIC (Enforcing the Live Vocals rule) ---
-
-function adjustStat(statName, amount) {
-player.stats[statName] += amount;
-
-// Hard caps at 0 and 100
-if (player.stats[statName] > 100) player.stats[statName] = 100;
-if (player.stats[statName] < 0) player.stats[statName] = 0;
-
-// YOUR RULE: Live Vocals can NEVER be higher than Vocals
-if (player.stats.liveVocals > player.stats.vocals) {
-    player.stats.liveVocals = player.stats.vocals;
-}
-}
-
-// --- TRAINING & TOURING ---
-
-function trainSkill(statName, cost) {
-if (player.money < cost) {
-    alert("You don't have enough money for this training!");
-    return;
-}
-
-player.money -= cost;
-// Increase stat by a random amount between 2 and 5
-let increase = Math.floor(Math.random() * 4) + 2; 
-adjustStat(statName, increase);
-
-alert(`Training complete! You spent $${cost} and improved ${statName} by ${increase} points.`);
-nextWeek(); // Training takes time!
-}
-
-function playLocalGig() {
-// You earn more if your stage presence is good
-let earnings = 100 + (player.stats.stagePresence * 2);
-player.money += earnings;
-
-// Improve Live Vocals (and slightly Stage Presence)
-let liveVocalIncrease = Math.floor(Math.random() * 3) + 1;
-adjustStat('liveVocals', liveVocalIncrease);
-adjustStat('stagePresence', 1);
-
-// Provide feedback based on the Live Vocals cap
-if (player.stats.liveVocals === player.stats.vocals) {
-    alert(`You earned $${earnings}. Your live vocals have peaked based on your current studio vocal ability! Improve your raw vocals to get better live.`);
-} else {
-    alert(`You earned $${earnings}. Playing live helped your Live Vocals improve!`);
-}
-
-nextWeek();
-}
-
-// --- TIME AND EVENT ENGINE ---
-
-function nextWeek() {
-player.week += 1;
-if (player.week > 52) {
-    player.week = 1;
-    player.age += 1;
-    alert("Happy Birthday! You are now " + player.age + " years old.");
-}
-
-player.money -= 150; // Weekly living expenses
-if (player.money < 0) player.money = 0; 
-
-updateMainUI();
-
-if (Math.random() < 0.15) triggerRandomEvent();
-}
-
-function triggerRandomEvent() {
-const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
-document.getElementById('event-title').innerText = event.title;
-document.getElementById('event-desc').innerText = event.desc;
-
-const choicesContainer = document.getElementById('event-choices');
-choicesContainer.innerHTML = ""; 
-
-event.choices.forEach(choice => {
-    const btn = document.createElement('button');
-    btn.className = "choice-btn";
-    btn.innerText = choice.text;
-    btn.onclick = () => {
-        choice.effect(); 
-        document.getElementById('event-modal').classList.remove('active'); 
-        updateMainUI(); 
-    };
-    choicesContainer.appendChild(btn);
-});
-document.getElementById('event-modal').classList.add('active');
-};
-// --- STUDIO & ALBUM CREATION ---
+// --- STUDIO: CREATION TO SCHEDULING ---
 
 function goToPhase2() {
 const title = document.getElementById('album-title').value;
 const type = document.getElementById('project-type').value;
+if (!title) return alert("Title required!");
 
-if (title.trim() === "") return alert("Your project needs a title!");
-
+currentProject = { title, type, tracks: [], hype: 0, budget: 0 };
 document.getElementById('studio-phase-1').style.display = 'none';
 
-if (type === 'single') {
-    // Singles don't need tracklists, go straight to marketing
-    document.getElementById('studio-phase-3').style.display = 'block';
-} else {
-    // It's an album, go to tracklist builder
+if (type === 'single') submitToLabel(); // Skip tracks for singles
+else {
     document.getElementById('studio-phase-2').style.display = 'block';
     if(document.getElementById('tracklist-container').children.length === 0) addTrack();
 }
@@ -186,155 +111,195 @@ if (type === 'single') {
 
 function addTrack() {
 const container = document.getElementById('tracklist-container');
-const trackNum = container.children.length + 1;
-
 const div = document.createElement('div');
 div.className = 'track-row';
 div.innerHTML = `
-    <span>${trackNum}.</span>
     <input type="text" class="track-name" placeholder="Song Name">
-    <select class="track-vibe">
-        <option value="upbeat">Upbeat</option>
-        <option value="ballad">Ballad</option>
-        <option value="experimental">Experimental</option>
-        <option value="interlude">Interlude</option>
-    </select>
+    <select class="track-vibe"><option value="upbeat">Upbeat</option><option value="ballad">Ballad</option><option value="interlude">Interlude</option></select>
     <button onclick="this.parentElement.remove()">X</button>
 `;
 container.appendChild(div);
 }
 
-function goToPhase3() {
-const tracks = document.querySelectorAll('.track-row');
-if (tracks.length === 0) return alert("You need at least one track!");
+function submitToLabel() {
+if (currentProject.type === 'album') {
+    const rows = document.querySelectorAll('.track-row');
+    if (rows.length === 0) return alert("Need at least one track!");
+    rows.forEach(r => currentProject.tracks.push({ name: r.querySelector('.track-name').value || "Track", vibe: r.querySelector('.track-vibe').value, isSingle: false }));
+}
+
+// Calculate quality score (0-10 scale for Execs)
+let rawQuality = (player.stats.songwriting + player.stats.production + player.stats.vocals) / 3;
+let execScore = Math.floor(rawQuality / 10); 
+currentProject.quality = rawQuality; // Save raw quality for sales later
+
 document.getElementById('studio-phase-2').style.display = 'none';
 document.getElementById('studio-phase-3').style.display = 'block';
+
+const feedbackEl = document.getElementById('exec-feedback');
+const promoSec = document.getElementById('promo-section');
+const scrapBtn = document.getElementById('scrap-btn');
+
+// Exec Review Logic
+if (execScore < player.label.minScore) {
+    player.labelRelationship = Math.max(0, player.labelRelationship - 10);
+    feedbackEl.innerText = `Execs rated it ${execScore}/10. "This is garbage. We aren't releasing this." (Relationship -10)`;
+    feedbackEl.style.color = "red";
+    promoSec.style.display = "none";
+    scrapBtn.style.display = "block";
+} else {
+    player.labelRelationship = Math.min(100, player.labelRelationship + 5);
+    currentProject.budget = player.label.promoMultiplier * (execScore || 1);
+    feedbackEl.innerText = `Execs rated it ${execScore}/10. "Good work. Here is your marketing budget."`;
+    feedbackEl.style.color = "green";
+    document.getElementById('ui-promo-budget').innerText = currentProject.budget.toLocaleString();
+    document.getElementById('ui-hype-built').innerText = "0";
+    promoSec.style.display = "block";
+    scrapBtn.style.display = "none";
+}
 }
 
-function releaseMusic() {
-const checks = document.querySelectorAll('.promo-check:checked');
-if (checks.length !== 3) return alert("The label demands you choose exactly 3 marketing focuses.");
-
-const title = document.getElementById('album-title').value;
-const concept = document.getElementById('album-concept').value;
-const type = document.getElementById('project-type').value; // 'album' or 'single'
-
-let tracks = [];
-if (type === 'album') {
-    document.querySelectorAll('.track-row').forEach(row => {
-        tracks.push({
-            name: row.querySelector('.track-name').value || "Untitled Track",
-            vibe: row.querySelector('.track-vibe').value,
-            isSingle: false 
-        });
-    });
+function buyPromo(type, cost, hypeBoost) {
+if (currentProject.budget < cost) return alert("Not enough budget!");
+currentProject.budget -= cost;
+currentProject.hype += hypeBoost;
+document.getElementById('ui-promo-budget').innerText = currentProject.budget.toLocaleString();
+document.getElementById('ui-hype-built').innerText = currentProject.hype;
 }
 
-// Chart Calculation
-let baseQuality = (player.stats.songwriting + player.stats.production + player.stats.vocals) / 3;
-let hypeBonus = (player.stats.charisma + player.stats.mediaTraining) / 10;
-let finalScore = Math.floor(baseQuality + hypeBonus + (Math.random() * 15)); 
+function scrapProject() {
+resetStudio();
+}
 
-let chartPosition = 200;
-let chartName = type === 'album' ? "Billboard 200" : "Hot 100";
+function scheduleRelease() {
+const delay = parseInt(document.getElementById('release-delay').value);
+currentProject.releaseWeek = player.totalWeeks + delay;
 
-if (finalScore > 90) chartPosition = Math.floor(Math.random() * 5) + 1; 
-else if (finalScore > 75) chartPosition = Math.floor(Math.random() * 40) + 10; 
-else if (finalScore > 50) chartPosition = Math.floor(Math.random() * 100) + 50; 
-else chartPosition = "Did Not Chart";
-
-// Save to memory
-player.discography.push({
-    title: title,
-    type: type, 
-    concept: concept,
-    tracklist: tracks,
-    peakChart: chartPosition
-});
-
-alert(`🎉 ${type.toUpperCase()} RELEASED: "${title}" 🎉\n\n${chartName} Debut: #${chartPosition}`);
-
-// Reset Studio UI
-document.getElementById('album-title').value = "";
-document.getElementById('album-concept').value = "";
-document.getElementById('tracklist-container').innerHTML = "";
-document.querySelectorAll('.promo-check').forEach(c => c.checked = false);
-
-document.getElementById('studio-phase-3').style.display = 'none';
-document.getElementById('studio-phase-1').style.display = 'block';
-
-player.money += (10000 - (chartPosition === "Did Not Chart" ? 8000 : chartPosition * 20)); 
-nextWeek();
+player.pendingReleases.push(currentProject);
+alert(`Scheduled! "${currentProject.title}" will drop in ${delay} week(s).`);
+resetStudio();
 switchTab('tab-dashboard', document.querySelectorAll('.nav-btn')[0]);
 }
 
-// --- DISCOGRAPHY & SINGLES MANAGEMENT ---
+function resetStudio() {
+document.getElementById('album-title').value = "";
+document.getElementById('tracklist-container').innerHTML = "";
+document.getElementById('studio-phase-3').style.display = 'none';
+document.getElementById('studio-phase-1').style.display = 'block';
+updateMainUI();
+}
+
+// --- TIME ENGINE & CHARTS ---
+
+function nextWeek() {
+player.week++; player.totalWeeks++;
+if (player.week > 52) { player.week = 1; player.age++; }
+player.money -= 150; 
+
+let chartReport = "";
+
+// 1. Drop Scheduled Music
+let droppedThisWeek = false;
+for (let i = player.pendingReleases.length - 1; i >= 0; i--) {
+    let release = player.pendingReleases[i];
+    if (release.releaseWeek === player.totalWeeks) {
+        // It drops today! Calculate initial sales based on Quality + Hype + Label Power
+        let HypeBonus = release.hype + (player.stats.charisma / 10);
+        let totalPoints = release.quality + HypeBonus + (player.label.control * 2);
+        
+        // Calculate actual Week 1 Sales
+        release.weeklySales = Math.floor(totalPoints * 2500 * (Math.random() * 0.5 + 0.8));
+        release.totalSales = release.weeklySales;
+        release.firstWeekSales = release.weeklySales;
+        release.peakChart = getChartPos(release.weeklySales);
+        release.weeksOnChart = 1;
+
+        player.activeReleases.push(release);
+        player.discography.push(release); // Add to permanent record
+        player.pendingReleases.splice(i, 1);
+        
+        chartReport += `🚨 NEW RELEASE: ${release.title} debuted at #${release.peakChart} with ${release.weeklySales.toLocaleString()} sales!\n\n`;
+        droppedThisWeek = true;
+    }
+}
+
+// 2. Process Active Charts (Decay)
+for (let i = player.activeReleases.length - 1; i >= 0; i--) {
+    let release = player.activeReleases[i];
+    
+    // Decay sales by 20% to 50% each week
+    release.weeklySales = Math.floor(release.weeklySales * (Math.random() * 0.3 + 0.5));
+    
+    if (release.weeklySales < 500) {
+        // Fell off the charts
+        player.activeReleases.splice(i, 1);
+    } else {
+        release.totalSales += release.weeklySales;
+        release.weeksOnChart++;
+        let currentChart = getChartPos(release.weeklySales);
+        
+        // Update Peak
+        if (currentChart < release.peakChart || release.peakChart === "N/A") release.peakChart = currentChart;
+        
+        chartReport += `🎵 ${release.title}: #${currentChart} (${release.weeklySales.toLocaleString()} sales)\n`;
+    }
+}
+
+updateMainUI();
+
+// Show weekly report if anything is charting
+if (chartReport !== "") {
+    document.getElementById('weekly-report-list').innerText = chartReport;
+    document.getElementById('weekly-modal').classList.add('active');
+}
+}
+
+function getChartPos(sales) {
+if (sales > 200000) return Math.floor(Math.random() * 3) + 1;
+if (sales > 80000) return Math.floor(Math.random() * 7) + 4;
+if (sales > 30000) return Math.floor(Math.random() * 30) + 11;
+if (sales > 10000) return Math.floor(Math.random() * 50) + 41;
+if (sales > 2000) return Math.floor(Math.random() * 100) + 100;
+return "N/A"; // Fell off
+}
+
+function closeWeeklyReport() {
+document.getElementById('weekly-modal').classList.remove('active');
+}
+
+// --- DISCOGRAPHY & RIAA ---
 
 function openDiscography() {
 const list = document.getElementById('disco-list');
 list.innerHTML = "";
 
-if (player.discography.length === 0) {
-    list.innerHTML = "<p>No music released yet. Hit the studio!</p>";
-} else {
-    // Loop through all released music and build the UI
-    player.discography.forEach((release, index) => {
-        let html = `
-        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 8px; text-align: left; background: #f8f9fa;">
-            <h4 style="color:#ff3366; margin:0; font-size:1.2rem;">${release.title}</h4>
-            <p style="font-size:0.85rem; color:#666; margin-bottom:5px;">
-                Type: ${release.type.toUpperCase()} | Peak Chart: #${release.peakChart}
-            </p>`;
-        
-        // If it's an album, list the tracks and add the "Make Single" buttons
-        if (release.type === 'album') {
-            html += `<ul style="font-size: 0.9rem; padding-left: 20px; margin-top: 5px;">`;
-            release.tracklist.forEach((track, tIndex) => {
-                let singleBtn = "";
-                
-                // The Rule: Interludes can't be singles. Already-released singles can't be released again.
-                if (track.vibe !== 'interlude' && !track.isSingle) {
-                    singleBtn = `<button style="padding: 3px 8px; font-size: 0.7rem; margin-left: 10px; width: auto; background: #333;" onclick="releasePostAlbumSingle(${index}, ${tIndex})">Release as Single</button>`;
-                } else if (track.isSingle) {
-                    singleBtn = `<span style="font-size: 0.75rem; color: #ff3366; margin-left: 10px; font-weight:bold;">(Single)</span>`;
-                }
-                
-                html += `<li style="margin-bottom: 5px;">${track.name} [${track.vibe}] ${singleBtn}</li>`;
-            });
-            html += `</ul>`;
-        }
-        html += `</div>`;
-        list.innerHTML += html;
-    });
-}
+player.discography.forEach(release => {
+    let certHtml = "";
+    if (release.totalSales >= 10000000) certHtml = `<span class="cert-badge cert-diamond">DIAMOND</span>`;
+    else if (release.totalSales >= 1000000) certHtml = `<span class="cert-badge cert-platinum">PLATINUM</span>`;
+    else if (release.totalSales >= 500000) certHtml = `<span class="cert-badge cert-gold">GOLD</span>`;
+
+    list.innerHTML += `
+    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 8px; background: #f8f9fa; text-align:left;">
+        <h4 style="color:#ff3366; margin:0;">${release.title} ${certHtml}</h4>
+        <p style="font-size:0.85rem; color:#666; margin-bottom:5px;">
+            Type: ${release.type.toUpperCase()} | Peak: #${release.peakChart} <br>
+            1st Week: ${release.firstWeekSales.toLocaleString()} | Total: ${release.totalSales.toLocaleString()}
+        </p>
+    </div>`;
+});
 
 document.getElementById('disco-modal').classList.add('active');
 }
 
-function releasePostAlbumSingle(albumIndex, trackIndex) {
-let album = player.discography[albumIndex];
-let track = album.tracklist[trackIndex];
-
-// Mark it as a single in the album data so the button disappears
-track.isSingle = true;
-
-// Calculate new chart position for the Hot 100
-let finalScore = ((player.stats.songwriting + player.stats.vocals) / 2) + (Math.random() * 20); 
-let chartPosition = 100;
-if (finalScore > 85) chartPosition = Math.floor(Math.random() * 10) + 1; // Top 10
-else if (finalScore > 60) chartPosition = Math.floor(Math.random() * 40) + 11; // Top 50
-else chartPosition = "Did Not Chart";
-
-// Add it to the discography as its own release
-player.discography.push({
-    title: track.name,
-    type: 'single',
-    peakChart: chartPosition
-});
-
-alert(`Label approved! You pushed "${track.name}" to radio and streaming as a single!\n\nHot 100 Peak: #${chartPosition}`);
-
-// Refresh the UI and pass time
-openDiscography(); 
-nextWeek(); 
+function trainSkill(stat, cost) {
+if (player.money < cost) return alert("Not enough money!");
+player.money -= cost;
+player.stats[stat] = Math.min(100, player.stats[stat] + Math.floor(Math.random() * 4) + 2);
+nextWeek();
+}
+function playLocalGig() {
+player.money += 150;
+player.stats.liveVocals = Math.min(player.stats.vocals, player.stats.liveVocals + 2);
+nextWeek();
 }
