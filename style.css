@@ -1,120 +1,64 @@
-### 2. `style.css` (The Design)
-This makes it look like an iPhone app with a clean, BitLife-style interface. 
+### 2. Replace all code in `style.css`
+
+This updates the layout to accommodate the bottom tabs, making it feel like a real iPhone app.
 
 ```css
-* {
-box-sizing: border-box;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-margin: 0;
-padding: 0;
-}
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; }
+body { background-color: #f0f0f5; display: flex; justify-content: center; height: 100vh; }
 
-body {
-background-color: #f0f0f5;
-display: flex;
-justify-content: center;
-height: 100vh;
-}
-
-/* Simulates a mobile screen on desktop, takes full screen on actual mobile */
 #game-container {
-width: 100%;
-max-width: 414px; 
-background-color: white;
-height: 100vh;
-overflow-y: auto;
-position: relative;
-box-shadow: 0 0 20px rgba(0,0,0,0.1);
+width: 100%; max-width: 414px; background-color: white; 
+height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1);
+display: flex; flex-direction: column; overflow: hidden;
 }
 
-.screen {
-display: none;
-padding: 20px;
-height: 100%;
-flex-direction: column;
-}
+.screen { display: none; padding: 20px; height: 100%; flex-direction: column; overflow-y: auto; }
+.screen.active { display: flex; }
+.in-game-screen { padding: 0; } /* Reset padding for the game UI layout */
 
-.screen.active {
-display: flex;
-}
-
+/* Header styling */
+header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding: 20px; background: white; }
 h1 { text-align: center; margin-top: 50px; font-size: 2.5rem; color: #ff3366; }
-h2 { color: #333; margin-bottom: 20px; }
-
-button {
-background-color: #ff3366;
-color: white;
-border: none;
-padding: 15px;
-border-radius: 10px;
-font-size: 1.1rem;
-font-weight: bold;
-cursor: pointer;
-margin-top: 20px;
-width: 100%;
-}
-
-button:active { background-color: #e62e5c; }
-button:disabled { background-color: #ccc; cursor: not-allowed; }
-
-.origin-btn {
-background-color: #eee;
-color: #333;
-margin-top: 10px;
-}
-
-.origin-btn.selected {
-background-color: #333;
-color: white;
-}
-
-.input-group { margin-bottom: 20px; }
-input[type="text"] {
-width: 100%;
-padding: 12px;
-font-size: 1.1rem;
-border: 2px solid #ddd;
-border-radius: 8px;
-margin-top: 5px;
-}
-
-.hint-text {
-font-size: 0.9rem;
-color: #666;
-margin-top: 10px;
-font-style: italic;
-min-height: 40px;
-}
-
-/* Main Dashboard UI */
-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-border-bottom: 2px solid #eee;
-padding-bottom: 10px;
-margin-bottom: 20px;
-padding-top: 20px;
-}
-
+h2 { color: #333; margin-bottom: 5px; }
+h3 { margin-bottom: 10px; color: #333; }
 .bank { color: #28a745; font-weight: bold; font-size: 1.2rem; }
+.time-info { font-size: 0.9rem; color: #666; }
 
-.grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 10px;
-margin-top: 10px;
-}
+/* General Buttons */
+button { background-color: #ff3366; color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; }
+button:active { background-color: #e62e5c; }
+button.disabled { background-color: #ccc; cursor: not-allowed; }
 
-.stat-box {
-background-color: #f8f9fa;
-padding: 10px;
-border-radius: 8px;
-border: 1px solid #ddd;
-text-align: center;
-}
+.action-btn { background-color: #333; margin-top: 10px; }
+.action-btn:active { background-color: #555; }
+.next-turn-btn { background-color: #ff3366; margin-top: 30px; }
 
+/* Forms and Inputs */
+.origin-btn { background-color: #eee; color: #333; margin-top: 10px; }
+.origin-btn.selected { background-color: #333; color: white; }
+.input-group { margin-bottom: 20px; }
+input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; margin-top: 5px; }
+.hint-text { font-size: 0.85rem; color: #666; margin-top: 5px; font-style: italic; margin-bottom: 15px; }
+
+/* Tabs System */
+.tab-content { display: none; padding: 20px; overflow-y: auto; flex-grow: 1; padding-bottom: 80px; }
+.tab-content.active-tab { display: block; }
+
+/* Bottom Nav Bar */
+.bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 70px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; padding-bottom: 15px; }
+.nav-btn { background: none; color: #999; margin: 0; padding: 10px; font-size: 1rem; flex-grow: 1; text-align: center; border-radius: 0; }
+.nav-btn.selected-nav { color: #ff3366; background: none; }
+
+/* Stats Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-box { background-color: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
 .stat-name { font-size: 0.8rem; color: #666; text-transform: uppercase; }
 .stat-value { font-size: 1.2rem; font-weight: bold; color: #333; }
 
-.next-turn-btn { background-color: #333; margin-top: 40px; }
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.modal-content h3 { color: #ff3366; margin-top: 0; margin-bottom: 15px; }
+.modal-content p { color: #333; margin-bottom: 20px; line-height: 1.4; }
+.choice-btn { background-color: #333; margin-top: 10px; padding: 12px; font-size: 1rem; }
