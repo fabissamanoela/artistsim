@@ -3,11 +3,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PopStar Simulator</title>
     <link rel="stylesheet" href="style.css">
-    <!-- This tag makes it behave like a native app on iPhone -->
     <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
     <div id="game-container">
+        
         <!-- START SCREEN -->
         <div id="start-screen" class="screen active">
             <h1>PopStar Sim</h1>
@@ -20,7 +20,7 @@
             <h2>Create Your Artist</h2>
             <div class="input-group">
                 <label>Artist Name:</label>
-                <input type="text" id="artist-name" placeholder="e.g. Lil' Coder or The Weekday">
+                <input type="text" id="artist-name" placeholder="e.g. The Weekday">
             </div>
             
             <div class="input-group">
@@ -33,32 +33,69 @@
                 </div>
             </div>
             <p id="origin-description" class="hint-text"></p>
-
             <button id="start-career-btn" onclick="startCareer()" disabled="">Start Career</button>
         </div>
 
-        <!-- MAIN GAME SCREEN -->
-        <div id="main-screen" class="screen">
+        <!-- IN-GAME UI (Contains Header, Tabs, and Nav) -->
+        <div id="game-ui" class="screen in-game-screen">
+            <!-- Header (Always visible while playing) -->
             <header>
-                <h2 id="ui-name">Name</h2>
+                <div>
+                    <h2 id="ui-name">Name</h2>
+                    <div class="time-info">Age: <span id="ui-age">18</span> (Week <span id="ui-week">1</span>)</div>
+                </div>
                 <div class="bank">Bank: $<span id="ui-money">0</span></div>
             </header>
-            
-            <div class="stats-container">
-                <h3>Artist Stats</h3>
-                <div id="stats-grid" class="grid">
-                    <!-- Stats will be injected here by Javascript -->
+
+            <!-- TAB 1: Dashboard -->
+            <div id="tab-dashboard" class="tab-content active-tab">
+                <div class="stats-container">
+                    <h3>Artist Stats</h3>
+                    <div id="stats-grid" class="grid"></div>
                 </div>
+                <!-- Resting just passes time without spending training money -->
+                <button class="action-btn next-turn-btn" onclick="nextWeek()">Next Week (Rest)</button>
             </div>
 
-            <div class="actions">
-                <button class="action-btn disabled">Release Music (Locked)</button>
-                <button class="action-btn disabled">View Discography (Locked)</button>
-                <button class="action-btn next-turn-btn">Next Month</button>
+            <!-- TAB 2: Training -->
+            <div id="tab-training" class="tab-content">
+                <h3>Train Skills</h3>
+                <p class="hint-text">Training takes 1 week and costs money. Live Vocals can only improve via touring!</p>
+                <button class="action-btn" onclick="trainSkill('vocals', 500)">Vocal Coaching ($500)</button>
+                <button class="action-btn" onclick="trainSkill('songwriting', 300)">Songwriting Workshop ($300)</button>
+                <button class="action-btn" onclick="trainSkill('production', 400)">Production Masterclass ($400)</button>
+                <button class="action-btn" onclick="trainSkill('stagePresence', 500)">Dance &amp; Choreography ($500)</button>
+                <button class="action-btn" onclick="trainSkill('mediaTraining', 800)">Media &amp; PR Training ($800)</button>
+                <button class="action-btn" onclick="trainSkill('charisma', 200)">Networking Event ($200)</button>
+            </div>
+
+            <!-- TAB 3: Tour -->
+            <div id="tab-tour" class="tab-content">
+                <h3>Touring &amp; Gigs</h3>
+                <p class="hint-text">Perform live to improve your Live Vocals and earn some cash.</p>
+                <button class="action-btn" onclick="playLocalGig()">Play Local Dive Bar (Takes 1 Week)</button>
+                <button class="action-btn disabled">National Tour (Locked)</button>
+                <button class="action-btn disabled">World Tour (Locked)</button>
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="bottom-nav">
+                <button class="nav-btn selected-nav" onclick="switchTab('tab-dashboard', this)">Home</button>
+                <button class="nav-btn" onclick="switchTab('tab-training', this)">Train</button>
+                <button class="nav-btn" onclick="switchTab('tab-tour', this)">Tour</button>
             </div>
         </div>
-    </div>
 
+        <!-- RANDOM EVENT POP-UP -->
+        <div id="event-modal" class="modal">
+            <div class="modal-content">
+                <h3 id="event-title">Event Title</h3>
+                <p id="event-desc">Event description goes here...</p>
+                <div id="event-choices"></div>
+            </div>
+        </div>
+
+    </div>
     <script src="script.js"></script>
 
 </body></html>
